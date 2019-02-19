@@ -41,6 +41,7 @@ class Agent():
 
         # Settings
         self.enable_double = enable_double
+        self.model_name = model_name
 
         # Save action & state space
         self.state_size = state_size
@@ -162,7 +163,7 @@ class Agent():
 
         # Update priorities
         errors = torch.abs(predictions - targets).data.cpu().numpy()
-        for i in range(BATCH_SIZE):
+        for i in range(len(errors)):
             self.memory.update(idxs[i], errors[i])
 
         # Get the loss, using importance sampling weights
