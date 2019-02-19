@@ -6,9 +6,11 @@ from libs.monitor import train, test
 # Command-line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", help="Show pretrained agent in environment", action="store_true")
+parser.add_argument("--no_graphics", help="Do not show graphics during training", action="store_true")
 parser.add_argument("--environment", nargs='?', help="Pick environment file", default="env/Banana.exe")
 parser.add_argument("--checkpoint", nargs='?', help="Pick environment file", default="logs/checkpoint.pth")
 parser.add_argument("--model_name", nargs='?', help="Choose a model name. Options: DQN, DuelDQN", default="DQN")
+parser.add_argument("--double", help="Enable double DQN", action="store_true")
 
 if __name__ == '__main__':
 
@@ -16,7 +18,7 @@ if __name__ == '__main__':
     args = parser.parse_args()    
 
     # Setup agent
-    agent = Agent(state_size=37, action_size=4, model_name=args.model_name, random_state=42)
+    agent = Agent(state_size=37, action_size=4, model_name=args.model_name, enable_double=args.double, random_state=42)
 
     # Testing or training
     if args.test:
@@ -27,7 +29,7 @@ if __name__ == '__main__':
     else:
 
         # Get environment (no graphics)
-        env = UnityEnvironment(file_name=args.environment, seed=42, no_graphics=True)
+        env = UnityEnvironment(file_name=args.environment, seed=42, no_graphics=args.no_graphics)
         train(env, agent, 
             brain_name=env.brain_names[0], 
             episodes=1000,
