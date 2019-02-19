@@ -70,9 +70,10 @@ class PrioritizedReplayMemory:
 
             s = random.uniform(a, b)
             (idx, p, data) = self.tree.get(s)
-            priorities.append(np.max([self.e, p]))
-            batch.append(data)
-            idxs.append(idx)
+            if p > 0:
+                priorities.append(p)
+                batch.append(data)
+                idxs.append(idx)
 
         # Calculate importance scaling for weight updates
         sampling_probabilities = priorities / self.tree.total()
