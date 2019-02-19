@@ -3,6 +3,9 @@ from collections import deque
 import numpy as np
 import torch
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 
 def environment_initialize(env, brain_name):
     """Initialize environment and return state
@@ -101,15 +104,36 @@ def train(env, agent, brain_name=None,
 
         # Info for user every 100 episodes
         n_secs = int(time.time() - time_start)
-        print(f'Episode {i:6}\t Score: {score:.2f}\t Avg: {avg_score:.2f}\t Best Avg: {best_avg_score:.2f} Epsilon {eps:.4f}\t BufferLen: {len(agent.memory):6}\t Seconds: {n_secs:4}')
+        print(f'Episode {i:6}\t Score: {score:.2f}\t Avg: {avg_score:.2f}\t Best Avg: {best_avg_score:.2f} Epsilon {eps:.4f}\t Memory: {len(agent.memory):6}\t Seconds: {n_secs:4}')
         time_start = time.time()
 
         # Check if done
         if avg_score >= thr_score:
             print(f'\nEnvironment solved in {i:d} episodes!\tAverage Score: {avg_score:.2f}')
-            torch.save(agent.qnetwork_local.state_dict(), 'checkpoints/solved.pth')
+
+            # Save the weights
+            torch.save(
+                agent.q_local.state_dict(),
+                'logs/solved_{}_{}.pth'.format(
+                    agent.model_name,
+                    'double' if agent.enable_double else 'single'
+                )
+            )
+
+            # Create plot of scores vs. episode
+            _, ax = plt.subplots(1, 1, figsize=(7, 5))
+            sns.lineplot(range(len(scores)), scores, label='Score', ax=ax)
+            sns.lineplot(range(len(avg_scores)), avg_scores, label='Avg Score', ax=ax)
+            ax.set_xlabel('Episodes')
+            ax.set_xlabel('Score')
+            ax.set_title('Agent: {}-{}'.format('double' if agent.enable_double else 'single', agent.model_name))
+            ax.legend()
+            plt.savefig('./logs/scores_{}_{}.png'.format(
+            agent.model_name,
+            'double' if agent.enable_double else 'single'
+            ))
+
             break
-    #plot(scores, avg_scores, agent.loss_list, agent.entropy_list)
 
 
 def test(env, agent, brain_name, checkpoint):
