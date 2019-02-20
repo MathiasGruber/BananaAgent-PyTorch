@@ -7,7 +7,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-def environment_initialize(env, brain_name):
+def get_state(env_info, state_type):
+    if state_type == 'discrete':
+        return env_info.vector_observations[0]
+    elif state_type == 'continuous':
+        return np.swapaxes(env_info.visual_observations[0], 1, 3)
+
+
+def environment_initialize(env, brain_name, state_type):
     """Initialize environment and return state
     
     Arguments:
@@ -19,11 +26,10 @@ def environment_initialize(env, brain_name):
     """
 
     env_info = env.reset(train_mode=True)[brain_name]
-    state = env_info.vector_observations[0]
-    return state
+    return get_state(env_info, state_type)
 
 
-def environment_step(env, brain_name, action):
+def environment_step(env, brain_name, action, state_type):
     """Perform action in environment.
     
     Arguments:
@@ -36,13 +42,13 @@ def environment_step(env, brain_name, action):
     """
 
     env_info = env.step(action)[brain_name]
-    state = env_info.vector_observations[0]
+    state = get_state(env_info, state_type)
     reward = env_info.rewards[0]
     done = env_info.local_done[0]
     return state, reward, done
 
 
-def train(env, agent, brain_name=None, 
+def train(env, agent, state_type, brain_name=None, 
           episodes=5000, max_steps=1000,
           eps_start=1.0, eps_end=0.001, eps_decay=0.97, 
           thr_score=13.0
@@ -52,6 +58,7 @@ def train(env, agent, brain_name=None,
     Arguments:
         env {UnityEnvironment} -- Unity Environment
         agent {object} -- Agent to traverse environment
+        state_type {str} -- type of state space. Options: discrete|pixels
     
     Keyword Arguments:
         brain_name {str} -- brain name for Unity environment (default: {None})
@@ -80,13 +87,13 @@ def train(env, agent, brain_name=None,
     time_start = time.time()
     eps = eps_start
     for i in range(1, episodes + 1):
-        state = environment_initialize(env, brain_name)
+        state = environment_initialize(env, brain_name, state_type)
 
         # Play an episode
         score = 0
         for _ in range(max_steps):
             action = agent.act(state, eps)
-            next_state, reward, done = environment_step(env, brain_name, action)
+            next_state, reward, done = environment_step(env, brain_name, action, state_type)            
             agent.step(state, action, reward, next_state, done)
             state = next_state
             score += reward
@@ -136,8 +143,17 @@ def train(env, agent, brain_name=None,
             break
 
 
-def test(env, agent, brain_name, checkpoint):
-    """Let pre-trained agent play in environment"""
+def test(env, agent, state_type, brain_name, checkpoint):
+    """Let pre-trained agent play in environment
+    
+    Arguments:
+        env {UnityEnvironment} -- Unity Environment
+        agent {object} -- Agent to traverse environment
+        state_type {str} -- type of state space. Options: discrete|pixels
+        brain_name {str} -- brain name for Unity environment (default: {None})
+        checkpoint {str} -- filepath to load network weights
+    """
+
 
     # Load trained model
     agent.qnetwork_local.load_state_dict(torch.load(checkpoint))

@@ -15,18 +15,19 @@ from libs import models
 CAPCITY = int(1e5)   # Prioritized Replay Capacity
 BATCH_SIZE = 64      # Batch Size
 GAMMA = 0.99         # Discount
-TAU = 1e-3           # for soft update of target parameters
+TAU = 1e-3           # Soft update of target network
 LR = 5e-4            # Learning rate
 UPDATE_FREQUENCY = 4 # Frequency for training network
 
 
 class Agent():
 
-    def __init__(self, state_size, action_size, model_name='DQN', enable_double=False, random_state=42):
+    def __init__(self, state_size, state_type, action_size, model_name='DQN', enable_double=False, random_state=42):
         """Initialize an Agent object.
         
         Arguments:
             state_size {int} -- Dimension of state space
+            state_type {str} -- type of state space. Options: discrete|pixels
             action_size {int} -- Dimension of action space
         
         Keyword Arguments:
@@ -42,6 +43,7 @@ class Agent():
         # Settings
         self.enable_double = enable_double
         self.model_name = model_name
+        self.state_type = state_type
 
         # Save action & state space
         self.state_size = state_size
@@ -55,8 +57,8 @@ class Agent():
         self.entropy_list = []
 
         # Get the neural network based on model_name argument
-        self.q_local = getattr(models, model_name)(state_size, action_size, random_state=random_state).to(self.device)
-        self.q_target = getattr(models, model_name)(state_size, action_size, random_state=random_state).to(self.device)
+        self.q_local = getattr(models, model_name)(state_size, state_type, action_size, random_state=random_state).to(self.device)
+        self.q_target = getattr(models, model_name)(state_size, state_type, action_size, random_state=random_state).to(self.device)
 
         # Get an optimizer for the local network
         self.optimizer = optim.Adam(self.q_local.parameters(), lr=LR)
@@ -70,20 +72,43 @@ class Agent():
         # Initialize time step (for updating every UPDATE_EVERY steps)
         self.t_step = 0
 
+    def local_prediction(self, state):
+        """Predict Q values for given state using local Q network
+        
+        Arguments:
+            state {array-like} -- Dimension of state space
+        
+        Returns:
+            [array] -- Predicted Q values for each action in state
+        """
+
+        pred = self.q_local(
+            Variable(torch.FloatTensor(state)).to(self.device)
+        )
+        pred = pred.data[0] if self.state_type == 'continuous' else pred.data
+        return pred
+
     def step(self, state, action, reward, next_state, done):
 
         # Get the timporal difference (TD) error for prioritized replay
-        old_q = self.q_local(
-            Variable(torch.FloatTensor(state)).to(self.device)
-        ).data[action]
-        new_q = reward
-        if not done:
-            new_q += GAMMA * torch.max(
-                self.q_target(
-                    Variable(torch.FloatTensor(next_state)).to(self.device)
-                ).data
-            )
-        td_error = abs(old_q - new_q)
+        self.q_local.eval()
+        self.q_target.eval()        
+        with torch.no_grad():
+
+            # Get old Q value. Not that if continous we need to account for batch dimension
+            old_q = self.local_prediction(state)[action]
+
+            # Get the new Q value.
+            new_q = reward
+            if not done:
+                new_q += GAMMA * torch.max(
+                    self.q_target(
+                        Variable(torch.FloatTensor(next_state)).to(self.device)
+                    ).data
+                )
+            td_error = abs(old_q - new_q)
+        self.q_local.train()
+        self.q_target.train()
 
         # Save experience in replay memory
         self.memory.add(td_error, (state, action, reward, next_state, done))
@@ -115,10 +140,9 @@ class Agent():
         if random.random() > eps:
 
             # Get predictions from local q network
-            state = torch.from_numpy(state).float().unsqueeze(0).to(self.device)
             self.q_local.eval()
             with torch.no_grad():
-                action_values = self.q_local(state)
+                action_values = self.local_prediction(state)
             self.q_local.train()
             
             return np.argmax(action_values.cpu().data.numpy()).astype(np.int32)

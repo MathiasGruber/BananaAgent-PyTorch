@@ -15,23 +15,48 @@ parser.add_argument("--double", help="Enable double DQN", action="store_true")
 if __name__ == '__main__':
 
     # Get arguments
-    args = parser.parse_args()    
+    args = parser.parse_args()  
+
+    # Start up the environment
+    if args.no_graphics:
+        env = UnityEnvironment(file_name=args.environment, seed=42, no_graphics=args.no_graphics)
+    else:
+        env = UnityEnvironment(file_name=args.environment, seed=42)
+
+    # Get dimensions of state space
+    brain_name = env.brain_names[0]
+    brain = env.brains[brain_name]
+    state_size = brain.vector_observation_space_size
+    state_type = 'discrete'
+
+    # In case state space is continous, get width/height of camara
+    if brain.number_visual_observations > 0:
+        h = brain.camera_resolutions[0]['height']
+        w = brain.camera_resolutions[0]['width']
+        state_size = (3, h, w)
+        state_type = 'continuous'
 
     # Setup agent
-    agent = Agent(state_size=37, action_size=4, model_name=args.model_name, enable_double=args.double, random_state=42)
+    agent = Agent(
+        state_size=state_size,
+        state_type=state_type,
+        action_size=4,
+        model_name=args.model_name,
+        enable_double=args.double,
+        random_state=42
+    )
 
     # Testing or training
     if args.test:
-
-        # Get environment (with graphics)
-        env = UnityEnvironment(file_name=args.environment, seed=42)
-        test(env, agent, brain_name=env.brain_names[0], checkpoint=args.checkpoint)
+        test(env, agent,
+            state_type=state_type,
+            brain_name=brain_name, 
+            checkpoint=args.checkpoint
+        )
     else:
-
-        # Get environment (no graphics)
-        env = UnityEnvironment(file_name=args.environment, seed=42, no_graphics=args.no_graphics)
         train(env, agent, 
-            brain_name=env.brain_names[0], 
+            state_type=state_type,
+            brain_name=brain_name, 
             episodes=1000,
             eps_start=1.0, 
             eps_end=0.001, 
