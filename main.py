@@ -57,7 +57,7 @@ if __name__ == '__main__':
         train(env, agent, 
             state_type=state_type,
             brain_name=brain_name, 
-            episodes=1000,
+            episodes=50000,
             eps_start=1.0, 
             eps_end=0.001, 
             eps_decay=0.97, 
