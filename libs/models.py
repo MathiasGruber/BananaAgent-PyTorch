@@ -47,8 +47,8 @@ class DQN(nn.Module):
             self.conv1 = nn.Conv2d(c, conv_filters[0], kernel_size=8, stride=4)
             self.conv2 = nn.Conv2d(conv_filters[0], conv_filters[1], kernel_size=4, stride=2)
             self.conv3 = nn.Conv2d(conv_filters[1], conv_filters[2], kernel_size=3, stride=1)
-            self.fc = nn.Linear(self._get_conv_out(state_size), dense_layers[1])
-            self.output = nn.Linear(dense_layers[1], action_size)
+            self.fc = nn.Linear(self._get_conv_out(state_size), 512)
+            self.output = nn.Linear(512, action_size)
         else:
             raise AttributeError('Unknown state space type: {}'.format(state_type))
 
