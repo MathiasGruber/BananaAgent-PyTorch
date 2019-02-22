@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class DQN(nn.Module):
@@ -21,15 +20,15 @@ class DQN(nn.Module):
             action_size {int} -- Dimension of action space
         
         Keyword Arguments:            
-            dense1 {int} -- Nodes in first dense layer (default: {32})
-            dense2 {int} -- Nodes in second dense layer (default: {32})
+            dense_layers {list} -- Nodes in dense layers (default: {[32, 32]})
+            conv_filters {list} -- Filters in conv layers (default: {[32, 64, 64]})
             random_state {int} -- seed for torch random number generator (default: {42})
         """
 
         super(DQN, self).__init__()
 
         # Settings
-        self.state_type = state_type
+        self.state_type = state_type        
 
         # Set the random number generator for torch
         torch.manual_seed(random_state)
@@ -42,16 +41,41 @@ class DQN(nn.Module):
             self.output = nn.Linear(dense_layers[1], action_size)
 
         elif state_type == 'continuous':
-            
+
             c, _, _ = state_size
+            self.relu = nn.ReLU()
             self.conv1 = nn.Conv2d(c, conv_filters[0], kernel_size=8, stride=4)
             self.conv2 = nn.Conv2d(conv_filters[0], conv_filters[1], kernel_size=4, stride=2)
             self.conv3 = nn.Conv2d(conv_filters[1], conv_filters[2], kernel_size=3, stride=1)
-            self.fc = nn.Linear(self._get_conv_out(state_size), 512)
-            self.output = nn.Linear(512, action_size)
+            self.fc1 = nn.Linear(self._get_conv_out(state_size), 64)
+            self.fc2 = nn.Linear(64, 64)
+            self.output = nn.Linear(64, action_size)
+            
+
         else:
             raise AttributeError('Unknown state space type: {}'.format(state_type))
 
+    def forward(self, state):
+
+        if self.state_type == 'discrete':
+
+            x = self.relu(self.fc1(state))
+            x = self.relu(self.fc2(x))
+            x = self.output(x)
+
+        elif self.state_type == 'continuous':
+
+            x = self._cnn(state)
+            x = self.relu(self.fc1(x))
+            x = self.relu(self.fc2(x))
+            x = self.output(x)
+            
+        else:
+            raise AttributeError('Unknown state space type: {}'.format(
+                self.state_type
+            ))
+
+        return x
 
     def _cnn(self, state):
         """Convolutional part of the network
@@ -63,10 +87,10 @@ class DQN(nn.Module):
             x -- output of the convolutional layers
         """
 
-        x = F.relu(self.conv1(state))
-        x = F.relu(self.conv2(x))
-        x = F.relu(self.conv3(x))
-        x = x.view(x.size(0), -1)
+        x = self.relu(self.conv1(state))
+        x = self.relu(self.conv2(x))
+        x = self.relu(self.conv3(x))
+        x = x.reshape(x.size(0), -1)
 
         return x
 
@@ -75,27 +99,6 @@ class DQN(nn.Module):
         x = self._cnn(x)
         n_size = x.data.view(1, -1).size(1)
         return n_size
-
-    def forward(self, state):
-
-        if self.state_type == 'discrete':
-
-            x = F.relu(self.fc1(state))
-            x = F.relu(self.fc2(x))
-            x = self.output(x)
-
-        elif self.state_type == 'continuous':
-
-            x = self._cnn(state)
-            x = F.relu(self.fc(x))
-            x = self.output(x)
-            
-        else:
-            raise AttributeError('Unknown state space type: {}'.format(
-                self.state_type
-            ))
-
-        return x
 
 
 class DuelDQN(nn.Module):
@@ -135,8 +138,8 @@ class DuelDQN(nn.Module):
         self.out_a = nn.Linear(dense2, action_size)
 
     def forward(self, state):
-        x = F.relu(self.fc1(state))
-        V = self.out_v(F.relu(self.fc_v(x)))
-        A = self.out_a(F.relu(self.fc_a(x)))
+        x = self.relu(self.fc1(state))
+        V = self.out_v(self.relu(self.fc_v(x)))
+        A = self.out_a(self.relu(self.fc_a(x)))
         Q = V + (A - A.mean())
         return Q
