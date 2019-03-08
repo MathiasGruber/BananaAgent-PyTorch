@@ -1,51 +1,89 @@
 import time
 from collections import deque
 import numpy as np
-import torch
 
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-def get_state(env_info, state_type):
-    if state_type == 'discrete':
-        return env_info.vector_observations[0]
-    elif state_type == 'continuous':
-        return np.swapaxes(env_info.visual_observations[0], 1, 3)
+class MyEnvironment():
+    def __init__(self, env, brain_name, state_type, n_frames=4):
+        """Wrapper around supplied UnityEnvironment
+        
+        Arguments:
+            env {UnityEnvironment} -- Unity evironment
+            brain_name {str} -- unity brain name
+            state_type {str} -- One of: discrete, continuous
+
+        Keyword Arguments:
+            n_frames {int} -- In the case of visual input, how many frames to stack (default: {4})
+        """
+        self.env = env
+        self.brain_name = brain_name
+        self.state_type = state_type
+        self.n_frames = n_frames
+        self.states = deque(maxlen=n_frames)
+
+    def get_state(self, env_info):
+        """Get state from environment info
+        
+        Arguments:
+            env_info {[unityagents.brain.BrainInfo]} -- Environment information
+        
+        Returns:
+            [np.array] -- State
+        """
+
+        if self.state_type == 'discrete':
+
+            # Return the raw state space
+            return env_info.vector_observations[0]
+            
+        elif self.state_type == 'continuous':
+
+            # Get state (N, H, W, C)
+            state = env_info.visual_observations[0]
+
+            # Convert to (N, C, H, W)
+            state = np.transpose(state, axes=(0, 3, 1, 2))
+
+            # Add to running list of states
+            while len(self.states) < self.n_frames:
+                self.states.append(state)
+            self.states.append(state)
+
+            # Return (N,C,F,H,W)
+            return np.transpose(np.array(self.states), axes=(1, 2, 0, 3, 4))
+
+    def initialize(self):
+        """Initialize environment and return state
+        
+        Arguments:
+            brain_name {str} -- unity brain name
+        
+        Returns:
+            [array-like] -- Initial state of environment
+        """
+
+        env_info = self.env.reset(train_mode=True)[self.brain_name]
+        return self.get_state(env_info)
 
 
-def environment_initialize(env, brain_name, state_type):
-    """Initialize environment and return state
-    
-    Arguments:
-        env {UnityEnvironment} -- Unity evironment
-        brain_name {str} -- unity brain name
-    
-    Returns:
-        [array-like] -- Initial state of environment
-    """
+    def step(self, action):
+        """Perform action in environment.
+        
+        Arguments:
+            action {int} -- action ID to take in environment
+        
+        Returns:
+            [tuple] -- tuple of type (state, rewards, done)
+        """
 
-    env_info = env.reset(train_mode=True)[brain_name]
-    return get_state(env_info, state_type)
-
-
-def environment_step(env, brain_name, action, state_type):
-    """Perform action in environment.
-    
-    Arguments:
-        env {UnityEnvironment} -- Unity evironment
-        brain_name {str} -- unity brain name
-        action {int} -- action ID to take in environment
-    
-    Returns:
-        [tuple] -- tuple of type (state, rewards, done)
-    """
-
-    env_info = env.step(action)[brain_name]
-    state = get_state(env_info, state_type)
-    reward = env_info.rewards[0]
-    done = env_info.local_done[0]
-    return state, reward, done
+        env_info = self.env.step(action)[self.brain_name]
+        state = self.get_state(env_info)
+        reward = env_info.rewards[0]
+        done = env_info.local_done[0]
+        return state, reward, done
 
 
 def train(env, agent, state_type, brain_name=None, 
@@ -82,18 +120,21 @@ def train(env, agent, state_type, brain_name=None,
     
     # Best score so far
     best_avg_score = -np.inf
+
+    # Get environment
+    environment = MyEnvironment(env, brain_name, state_type)
     
     # Loop over episodes
     time_start = time.time()
     eps = eps_start
     for i in range(1, episodes + 1):
-        state = environment_initialize(env, brain_name, state_type)
+        state = environment.initialize()
 
         # Play an episode
         score = 0
         for _ in range(max_steps):
             action = agent.act(state, eps)
-            next_state, reward, done = environment_step(env, brain_name, action, state_type)            
+            next_state, reward, done = environment.step(action)
             agent.step(state, action, reward, next_state, done)
             state = next_state
             score += reward
