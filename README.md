@@ -38,18 +38,16 @@ The environment is considered solved when the agent collect an average score of 
 * `main.py`: Main command-line interface for training & testing the agent
 
 # Training the Agent
-For training the agent on the discrete state space, the model can be run as follows (only tested on windows!):
+For training the agent on the discrete state space, the model can be run by using one of the following (only tested on windows!):
 ```
-python main.py \
-    --environment env_unity/DiscreteBanana/Banana.exe \
-    --model_name DuelDQN \
-    --double
+python main.py --environment env_unity/DiscreteBanana/Banana.exe --model_name DQN
+python main.py --environment env_unity/DiscreteBanana/Banana.exe --model_name DuelDQN
+python main.py --environment env_unity/DiscreteBanana/Banana.exe --model_name DQN --double
+python main.py --environment env_unity/DiscreteBanana/Banana.exe --model_name DuelDQN --double
 ```
 
 For training agent on the pixel state space, the following can be used (only tested on windows!)
 ```
-python main.py \
-    --environment env_unity/VisualBanana/Banana.exe \
-    --model_name DuelDQN \
-    --double
+python main.py --environment env_unity/VisualBanana/Banana.exe --model_name DQN
+python main.py --environment env_unity/VisualBanana/Banana.exe --model_name DQN --double
 ```
