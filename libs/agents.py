@@ -107,6 +107,7 @@ class Agent():
                     ).data
                 )
             td_error = abs(old_q - new_q)
+
         self.q_local.train()
         self.q_target.train()
 
@@ -144,7 +145,7 @@ class Agent():
             with torch.no_grad():
                 action_values = self.local_prediction(state)
             self.q_local.train()
-            
+
             return np.argmax(action_values.cpu().data.numpy()).astype(np.int32)
         else:
 
