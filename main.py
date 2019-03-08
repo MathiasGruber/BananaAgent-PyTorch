@@ -33,7 +33,7 @@ if __name__ == '__main__':
     if brain.number_visual_observations > 0:
         h = brain.camera_resolutions[0]['height']
         w = brain.camera_resolutions[0]['width']
-        state_size = (3, h, w)
+        state_size = (3, 4, h, w)
         state_type = 'continuous'
 
     # Setup agent
