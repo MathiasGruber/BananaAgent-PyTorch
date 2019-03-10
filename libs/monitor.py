@@ -1,4 +1,6 @@
 import time
+import torch
+
 from collections import deque
 import numpy as np
 
@@ -162,7 +164,8 @@ def train(env, agent, state_type, brain_name=None,
             # Save the weights
             torch.save(
                 agent.q_local.state_dict(),
-                'logs/solved_{}_{}.pth'.format(
+                'logs/weights_{}_{}_{}.pth'.format(
+                    env.name,
                     agent.model_name,
                     'double' if agent.enable_double else 'single'
                 )
