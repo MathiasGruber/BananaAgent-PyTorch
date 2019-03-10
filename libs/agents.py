@@ -11,7 +11,7 @@ from torch.autograd import Variable
 from libs.memory import PrioritizedReplayMemory
 
 
-CAPCITY = int(5e4)   # Prioritized Replay Capacity
+CAPACITY = int(5e4)   # Prioritized Replay Capacity
 BATCH_SIZE = 64      # Batch Size
 GAMMA = 0.99         # Discount
 TAU = 1e-3           # Soft update of target network
@@ -64,7 +64,7 @@ class Agent():
         print(self.q_local)
 
         # Prioritized Experience Replay
-        self.memory = PrioritizedReplayMemory(CAPCITY)
+        self.memory = PrioritizedReplayMemory(CAPACITY)
 
         # Initialize time step (for updating every UPDATE_EVERY steps)
         self.t_step = 0
