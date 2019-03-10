@@ -9,10 +9,9 @@ import torch.optim as optim
 from torch.autograd import Variable
 
 from libs.memory import PrioritizedReplayMemory
-from libs import models
 
 
-CAPCITY = int(1e5)   # Prioritized Replay Capacity
+CAPCITY = int(5e4)   # Prioritized Replay Capacity
 BATCH_SIZE = 64      # Batch Size
 GAMMA = 0.99         # Discount
 TAU = 1e-3           # Soft update of target network
@@ -22,13 +21,15 @@ UPDATE_FREQUENCY = 4 # Frequency for training network
 
 class Agent():
 
-    def __init__(self, state_size, state_type, action_size, model_name='DQN', enable_double=False, random_state=42):
+    def __init__(self, state_size, state_type, action_size, q_local, q_target, enable_double=False, random_state=42):
         """Initialize an Agent object.
         
         Arguments:
             state_size {int} -- Dimension of state space
             state_type {str} -- type of state space. Options: discrete|pixels
             action_size {int} -- Dimension of action space
+            q_local {nn.Module} -- Local Q network
+            q_target {nn.Module} -- Target Q network
         
         Keyword Arguments:
             model_name {str} -- which model to chose; DQN or DuelDQN (default: {'DQN'})
@@ -37,12 +38,8 @@ class Agent():
         """
 
 
-        # Assertions
-        assert model_name in ['DQN', 'DuelDQN'], 'model_name {} is now implemented yet.'.format(model_name)
-
         # Settings
         self.enable_double = enable_double
-        self.model_name = model_name
         self.state_type = state_type
 
         # Save action & state space
@@ -57,8 +54,8 @@ class Agent():
         self.entropy_list = []
 
         # Get the neural network based on model_name argument
-        self.q_local = getattr(models, model_name)(state_size, state_type, action_size, random_state=random_state).to(self.device)
-        self.q_target = getattr(models, model_name)(state_size, state_type, action_size, random_state=random_state).to(self.device)
+        self.q_local = q_local.to(self.device)
+        self.q_target = q_target.to(self.device)
 
         # Get an optimizer for the local network
         self.optimizer = optim.Adam(self.q_local.parameters(), lr=LR)
@@ -112,7 +109,7 @@ class Agent():
         self.q_target.train()
 
         # Save experience in replay memory
-        self.memory.add(td_error, (state, action, reward, next_state, done))
+        self.memory.add(td_error.item(), (state, action, reward, next_state, done))
 
         # Learn every UPDATE_FREQUENCY time steps.
         self.t_step = (self.t_step + 1) % UPDATE_FREQUENCY
@@ -168,9 +165,9 @@ class Agent():
         states = Variable(torch.Tensor(states)).float().to(self.device)
         next_states = Variable(torch.Tensor(next_states)).float().to(self.device)
         actions = torch.LongTensor(actions).view(-1, 1).to(self.device)
-        rewards = torch.FloatTensor(rewards).to(self.device).unsqueeze(1)
-        dones = torch.FloatTensor(dones).to(self.device).unsqueeze(1)
-        is_weight = torch.FloatTensor(is_weight).to(self.device).unsqueeze(1)
+        rewards = torch.FloatTensor(rewards).unsqueeze(1).to(self.device)
+        dones = torch.FloatTensor(dones).unsqueeze(1).to(self.device)
+        is_weight = torch.FloatTensor(is_weight).unsqueeze(1).to(self.device)
 
         # Use DoubleDQN or DQN to get maximum Q for next state
         if self.enable_double:
@@ -192,7 +189,7 @@ class Agent():
             self.memory.update(idxs[i], errors[i])
 
         # Get the loss, using importance sampling weights
-        loss = (is_weight * nn.MSELoss(reduce=False)(predictions, targets)).mean()
+        loss = (is_weight * nn.MSELoss(reduction='none')(predictions, targets)).mean()
 
         # Run optimizer
         self.optimizer.zero_grad()

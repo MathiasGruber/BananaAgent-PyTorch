@@ -2,6 +2,7 @@ import argparse
 from unityagents import UnityEnvironment
 from libs.agents import Agent
 from libs.monitor import train, test
+from libs import models
 
 # Command-line arguments
 parser = argparse.ArgumentParser()
@@ -23,10 +24,14 @@ if __name__ == '__main__':
     else:
         env = UnityEnvironment(file_name=args.environment, seed=42)
 
+    # Create environment name based on input file path
+    env.name = '_'.join(args.environment.split("/")[:-1])
+
     # Get dimensions of state space
     brain_name = env.brain_names[0]
     brain = env.brains[brain_name]
-    state_size = brain.vector_observation_space_size
+    action_size = brain.vector_action_space_size
+    state_size = brain.vector_observation_space_size    
     state_type = 'discrete'
 
     # In case state space is continous, get width/height of camara
@@ -36,12 +41,17 @@ if __name__ == '__main__':
         state_size = (3, 4, h, w)
         state_type = 'continuous'
 
+    # Get Q networks
+    q_local = getattr(models, args.model_name)(state_size, state_type, action_size, random_state=42)
+    q_target = getattr(models, args.model_name)(state_size, state_type, action_size, random_state=42)
+
     # Setup agent
     agent = Agent(
         state_size=state_size,
         state_type=state_type,
-        action_size=4,
-        model_name=args.model_name,
+        action_size=action_size,
+        q_local=q_local,
+        q_target=q_target,
         enable_double=args.double,
         random_state=42
     )
