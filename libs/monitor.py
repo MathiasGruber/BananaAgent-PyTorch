@@ -176,9 +176,10 @@ def train(env, agent, state_type, brain_name=None,
             ax.set_xlabel('Score')
             ax.set_title('Agent: {}-{}'.format('double' if agent.enable_double else 'single', agent.model_name))
             ax.legend()
-            plt.savefig('./logs/scores_{}_{}.png'.format(
-            agent.model_name,
-            'double' if agent.enable_double else 'single'
+            plt.savefig('./logs/scores_{}_{}_{}.png'.format(
+                env.name,
+                agent.model_name,
+                'double' if agent.enable_double else 'single'
             ))
 
             break
