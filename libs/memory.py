@@ -4,7 +4,10 @@ from libs.sumtree import SumTree
 
 
 class PrioritizedReplayMemory:  
-    '''A binary sum-tree. See https://arxiv.org/pdf/1511.05952.pdf'''
+    '''
+    Implementation of prioritized experience replay. Adapted from:
+    https://github.com/rlcode/per/blob/master/prioritized_memory.py
+    '''
 
     def __init__(self, capacity):
         self.e = 0.01

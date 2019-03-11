@@ -5,7 +5,7 @@ class SumTree:
     '''
     A binary sum-tree. See Appendix B.2.1. in https://arxiv.org/pdf/1511.05952.pdf
     
-    Adapted from reference implementation at:
+    Adapted from implementation at:
     https://github.com/jaromiru/AI-blog/blob/master/SumTree.py    
     '''
     
