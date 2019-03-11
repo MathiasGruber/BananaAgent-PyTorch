@@ -54,6 +54,12 @@ python main.py --environment env_unity/VisualBanana/Banana.exe --model_name DQN 
 python main.py --environment env_unity/VisualBanana/Banana.exe --model_name DuelDQN --double
 ```
 
+# Testing the agent
+Once the agent has been trained, it can be run as follows:
+```
+python main.py --environment env_unity/VisualBanana/Banana.exe --model_name DQN --test --checkpoint logs/weights_env_unity_VisualBanana_DQN_single.pth
+```
+
 # Profiling
 When trying to optimize training speed, I've used the following to profile the code:
 ```
