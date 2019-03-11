@@ -83,3 +83,5 @@ The current implementation includes DDQN, PER and Dueling DQN, which constitute 
 - [ ] [Multi-step bootstrap targets](https://arxiv.org/abs/1602.01783)
 - [ ] [Distributional DQN](https://arxiv.org/abs/1707.06887)
 - [ ] [Noisy DQN](https://arxiv.org/abs/1706.10295)
+
+Before implementing the above, it might be a good idea to optimize the code for training speed, e.g. by putting play and train functions in separate processes, adjust batch size, etc. The following link provides a lot of such potential speedups: [optimize training speed](https://medium.com/mlreview/speeding-up-dqn-on-pytorch-solving-pong-in-30-minutes-81a1bd2dff55)
