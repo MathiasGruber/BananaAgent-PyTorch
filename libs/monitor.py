@@ -1,7 +1,8 @@
+import os
 import time
-import torch
-
 from collections import deque
+
+import torch
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -57,7 +58,7 @@ class MyEnvironment():
             # Return (N,C,F,H,W)
             return np.transpose(np.array(self.states), axes=(1, 2, 0, 3, 4))
 
-    def initialize(self):
+    def initialize(self, train_mode=True):
         """Initialize environment and return state
         
         Arguments:
@@ -67,7 +68,7 @@ class MyEnvironment():
             [array-like] -- Initial state of environment
         """
 
-        env_info = self.env.reset(train_mode=True)[self.brain_name]
+        env_info = self.env.reset(train_mode=train_mode)[self.brain_name]
         return self.get_state(env_info)
 
 
@@ -199,17 +200,19 @@ def test(env, agent, state_type, brain_name, checkpoint):
         checkpoint {str} -- filepath to load network weights
     """
 
-
     # Load trained model
-    agent.qnetwork_local.load_state_dict(torch.load(checkpoint))
+    agent.q_local.load_state_dict(torch.load(checkpoint))
+
+    # Get environment
+    environment = MyEnvironment(env, brain_name, state_type)
 
     # Initialize & interact in environment
-    state = environment_initialize(env, brain_name)
+    state = environment.initialize(train_mode=False)
     for _ in range(600):
 
         # Get action & perform step
         action = agent.act(state)
-        state, _, done = environment_step(env, brain_name, action)
+        state, _, done = environment.step(action)
         if done:
             break
 
