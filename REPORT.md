@@ -80,6 +80,6 @@ x = self.output(x)
 
 # Future Work
 The current implementation includes DDQN, PER and Dueling DQN, which constitute 3 out of the 6 DQN extensions of the [Rainbow agent](https://arxiv.org/abs/1710.02298). The last 3 extensions would be natural starting points for future improvements to this implementation:
-[] (Multi-step bootstrap targets)[https://arxiv.org/abs/1602.01783]
-[] (Distributional DQN)[https://arxiv.org/abs/1707.06887]
-[] (Noisy DQN)(https://arxiv.org/abs/1706.10295)
+- [ ] (Multi-step bootstrap targets)[https://arxiv.org/abs/1602.01783]
+- [ ] (Distributional DQN)[https://arxiv.org/abs/1707.06887]
+- [ ] (Noisy DQN)(https://arxiv.org/abs/1706.10295)
