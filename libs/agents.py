@@ -21,7 +21,7 @@ UPDATE_FREQUENCY = 4 # Frequency for training network
 
 class Agent():
 
-    def __init__(self, state_size, state_type, action_size, q_local, q_target, enable_double=False, random_state=42):
+    def __init__(self, state_size, state_type, action_size, q_local, q_target, model_name='DQN', enable_double=False, random_state=42):
         """Initialize an Agent object.
         
         Arguments:
@@ -29,9 +29,9 @@ class Agent():
             state_type {str} -- type of state space. Options: discrete|pixels
             action_size {int} -- Dimension of action space
             q_local {nn.Module} -- Local Q network
-            q_target {nn.Module} -- Target Q network
+            q_target {nn.Module} -- Target Q network            
         
-        Keyword Arguments:
+        Keyword Arguments:        
             model_name {str} -- which model to chose; DQN or DuelDQN (default: {'DQN'})
             enable_double {bool} -- whether to enable double DQN (default: {False})
             random_state {int} -- seed for torch random number generator (default: {42})
@@ -39,6 +39,7 @@ class Agent():
 
 
         # Settings
+        self.model_name = model_name
         self.enable_double = enable_double
         self.state_type = state_type
 

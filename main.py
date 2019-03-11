@@ -52,6 +52,7 @@ if __name__ == '__main__':
         action_size=action_size,
         q_local=q_local,
         q_target=q_target,
+        model_name=args.model_name,
         enable_double=args.double,
         random_state=42
     )
