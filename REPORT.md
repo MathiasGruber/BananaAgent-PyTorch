@@ -28,7 +28,7 @@ In estimating our `Q` values, we can create a network that estimates a state val
 The hyperparameters are chosen as follows (inspired by others, I have not played with tuning these):
 
 ```
-CAPACITY = int(5e4)   # Prioritized Replay Capacity
+CAPACITY = int(5e4)   # Prioritized Replay Capacity. Size chosen based on available RAM.
 BATCH_SIZE = 64       # Batch Size
 GAMMA = 0.99          # Discount
 TAU = 1e-3            # Soft update of target network
@@ -65,5 +65,13 @@ x = self.output(x)
 ```
 
 # Results
+## Discrete State Space
+![DQN](logs/scores_env_unity_DiscreteBanana_DQN_single.png) ![DDQN](logs/scores_env_unity_DiscreteBanana_DQN_double.png) ![DuelDQN](logs/scores_env_unity_DiscreteBanana_DuelDQN_single.png) ![DuelDDQN](logs/scores_env_unity_DiscreteBanana_DuelDQN_double.png)
+
+## Pixel State Space
 
 # Future Work
+The current implementation includes DDQN, PER and Dueling DQN, which constitute 3 out of the 6 DQN extensions of the [Rainbow agent](https://arxiv.org/abs/1710.02298). The last 3 extensions would be natural starting points for future improvements to this implementation:
+[] (Multi-step bootstrap targets)[https://arxiv.org/abs/1602.01783]
+[] (Distributional DQN)[https://arxiv.org/abs/1707.06887]
+[] (Noisy DQN)(https://arxiv.org/abs/1706.10295)
