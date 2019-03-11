@@ -8,7 +8,7 @@ pip install -r requirements.txt
 ```
 
 ## Banana Environment
-The agent was developed specifically to solve a banana collection environment developed in Unity, which can be downloaded from the following locations. The objective in the banana environment is gor an agent to navigate and collect yellow bananas (+1 reward) while avoiding blue bananas (-1 reward). Download your specific environment and unpack it into the `./env_unity/` folder in this repo:
+The agent was developed specifically to solve a banana collection environment developed in Unity, which can be downloaded from the following locations. The objective in the banana environment is for an agent to navigate and collect yellow bananas (+1 reward) while avoiding blue bananas (-1 reward). Download your specific environment and unpack it into the `./env_unity/` folder in this repo:
 
 Environment with discrete state space (37 dimensions):
 * Linux: [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Linux.zip)
@@ -49,5 +49,13 @@ python main.py --environment env_unity/DiscreteBanana/Banana.exe --model_name Du
 For training agent on the pixel state space, the following can be used (only tested on windows!)
 ```
 python main.py --environment env_unity/VisualBanana/Banana.exe --model_name DQN
+python main.py --environment env_unity/VisualBanana/Banana.exe --model_name DuelDQN
 python main.py --environment env_unity/VisualBanana/Banana.exe --model_name DQN --double
+python main.py --environment env_unity/VisualBanana/Banana.exe --model_name DuelDQN --double
+```
+
+# Profiling
+When trying to optimize training speed, I've used the following to profile the code:
+```
+python -m cProfile -o profile.txt -s tottime main.py --environment env_unity/VisualBanana/Banana.exe --model_name DQN --double
 ```
