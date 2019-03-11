@@ -1,7 +1,7 @@
 # Double-Duel-Deep-Q-Network in PyTorch
 This model is developed as a solution to Project 1 of Udacity Deep Reinforcement Learning Nanodegree.
 <img src="logs/trained_agent.gif" width="50%" />
-<p><small>Image from [official repo](https://github.com/udacity/deep-reinforcement-learning/tree/master/p1_navigation)</small></p>
+<sup>Image from <a href="https://github.com/udacity/deep-reinforcement-learning/tree/master/p1_navigation">official repo</a></sup>
 
 # Installation
 Install the package requirements for this repository
