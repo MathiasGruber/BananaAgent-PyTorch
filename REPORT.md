@@ -66,7 +66,12 @@ x = self.output(x)
 
 # Results
 ## Discrete State Space
-![DQN](logs/scores_env_unity_DiscreteBanana_DQN_single.png) ![DDQN](logs/scores_env_unity_DiscreteBanana_DQN_double.png) ![DuelDQN](logs/scores_env_unity_DiscreteBanana_DuelDQN_single.png) ![DuelDDQN](logs/scores_env_unity_DiscreteBanana_DuelDQN_double.png)
+<p float="left">
+  <img src="logs/scores_env_unity_DiscreteBanana_DQN_single.png" width="24%" />
+  <img src="logs/scores_env_unity_DiscreteBanana_DQN_double.png" width="24%" /> 
+  <img src="logs/scores_env_unity_DiscreteBanana_DuelDQN_single.png" width="24%" />
+  <img src="logs/scores_env_unity_DiscreteBanana_DuelDQN_double.png" width="24%">
+</p>
 
 ## Pixel State Space
 
