@@ -74,6 +74,9 @@ x = self.output(x)
 </p>
 
 ## Pixel State Space
+<p float="left">
+  <img src="logs/scores_env_unity_VisualBanana_DQN_single.png" width="24%" />
+</p>
 
 # Future Work
 The current implementation includes DDQN, PER and Dueling DQN, which constitute 3 out of the 6 DQN extensions of the [Rainbow agent](https://arxiv.org/abs/1710.02298). The last 3 extensions would be natural starting points for future improvements to this implementation:
